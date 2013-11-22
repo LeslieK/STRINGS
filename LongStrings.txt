@@ -1,0 +1,14 @@
+(define oriC-Vibrio-cholerae
+  (string-append
+   "atcaatgatcaacgtaagcttctaagcatgatcaaggtgctcacacagtttatccacaac"
+   "ctgagtggatgacatcaagataggtcgttgtatctccttcctctcgtactctcatgacca"
+   "cggaaagatgatcaagagaggatgatttcttggccatatcgcaatgaatacttgtgactt"
+   "gtgcttccaattgacatcttcagcgccatattgcgctggccaaggtgacggagcgggatt"
+   "acgaaagcatgatcatggctgttgttctgtttatcttgttttgactgagacttgttagga"
+   "tagacggtttttcatcactgactagccaaagccttactctgcctgacatcgaccgtaaat"
+   "tgataatgaatttacatgcttccgcgacgatttacctcttgatcatcgatccgattgaag"
+   "atcttcaattgttaattctcttgcctcgactcatagccatgatgagctcttgatcatgtt"
+   "tccttaaccctctattttttacggaagaatgatcaagctgctgctcttgatcatcgtttc"
+   ))
+
+   

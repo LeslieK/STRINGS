@@ -1,0 +1,1 @@
+radix (R) - number of possible different character values in the string
