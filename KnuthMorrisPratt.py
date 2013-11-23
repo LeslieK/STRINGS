@@ -83,14 +83,14 @@ class KMP(object):
 					# found match
 					results.append(i - self.M)
 					# reset index into pattern and continue to match
-					j = j - 1
+					j = j - 2  # back up pattern index to one before last character
 					j = self.dfa.next(txt[i], j)
 			# check for last match
 			if j == self.M:
 				#print 'match', i, i - (self.M - 1)
 				results.append(i - self.M + 1) 
 			break
-		print 'matches: {}'.format(len(results)) # number of matches
+		#print 'matches: {}'.format(len(results)) # number of matches
 		return results
 
 

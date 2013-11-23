@@ -1,5 +1,4 @@
 import StringUtils
-import pdb
 
 R = 10 # number of character values in alphabet
 
@@ -65,7 +64,7 @@ class Quick3string(object):
 	''' quick 3-way + MSD sort'''
 
 	def __init__(self, alist):
-		'''sort a list of integers'''
+		'''sort a sequence of strings'''
 		self.alist = alist
 
 	def _sort(self, lo, hi, d):
@@ -116,39 +115,76 @@ class Quick3string(object):
 		self._sort(0, len(self.alist) - 1, 0)
 		return self.alist
 
+class Suffix(object):
+	'''a string suffix'''
+	def __init__(self, s, offset):
+		self.offset = offset
+		self.N = len(s)
+		self.s = s
+
+	def __getitem__(self, i):
+		return self.s[i + self.offset]
+
+	# def charAt(self, i):
+	# 	return self.s[i + self.offset]
+
+	def length(self):
+		return self.N - self.offset
+
+	def __cmp__(self, that):
+		'''compare two suffix objects'''
+		maxoffset = max(self.offset, that.offset)
+		shortest_string = self.N - maxoffset
+		for i in range(shortest_string):
+			if self[i] < that[i]:
+				return -1
+			elif self[i] > that[i]:
+				return 1
+		return 0
+
+	def __repr__(self):
+		return self.s, self.offset
+
 class SuffixArray(object):
+	''' an array of string suffixes'''
 	def __init__(self, text):
 		'''build a suffix array of (random) text'''
+		self.text = text
 		self.N = len(text)
-		self.suffixes = [1] * self.N
-
-		for i in range(self.N):
-			# build suffixes
-			self.suffixes[i] = text[i:]
-			#print self.suffixes[i]
+		self.suffixes = [Suffix(text, i) for i in range(self.N)]
 
 		# sort suffix array (what sort algorithm is used?)
 		#suffixes.sort
 		# MSD radix sort + 3-way quicksort
-		qs = Quick3string(self.suffixes)
-		self.suffixes = qs.sort()
+		
+		#self.suffixes = sorted(self.suffixes)
+		self.suffixes.sort()
+
+	def __getitem__(self, i):
+		return self.suffixes[i]
+
 
 	def length(self):
 		'''length of original text'''
 		return self.N
 
 	def select(self, i):
-		'''return suffix array i'''
-		return self.suffixes[i]
+		'''return suffix string for suffix in suffixArray[i]'''
+		return self.text[self[i].offset:]
 
 	def index(self, i):
-		'''index in original text where suffix array i begins'''
-		return self.N - len(self.suffixes[i])
+		'''index in original text where suffix i begins'''
+		return self[i].offset
 
 	def lcp(self, i):
 		'''return longest common prefix between suffix[i] and suffix[i-1]'''
 		assert(i > 0)
-		return StringUtils.lcp(self.suffixes[i], self.suffixes[i - 1])
+		# suffix objects
+		min_length = min(self[i].length(), self[i - 1].length())
+		for j in range(min_length):
+			if self.select(i)[j] != self.select(i-1)[j]:
+				return j
+		return min_length
 
 	def rank(self, key):
 		'''number of suffixes strictly less than key'''
@@ -157,10 +193,9 @@ class SuffixArray(object):
 		hi = self.N - 1
 		while (lo <= hi):
 			mid = lo + (hi - lo)/2
-			comp = StringUtils.compareTo(key, self.suffixes[mid])
-			if comp < 0:
+			if key < self.select[mid]:
 				hi = mid - 1
-			elif comp > 0:
+			elif key > self.select[mid]:
 				lo = mid + 1
 			else:
 				return mid
