@@ -1,5 +1,4 @@
-#from KeyIndexedCounting import SuffixArray
-from KeyIndexedCounting2 import SuffixArray
+from KeyIndexedCounting import SuffixArray
 
 texts = [
 "atcaatgatcaacgtaagcttctaagcatgatcaaggtgctcacacagtttatccacaac", 
@@ -63,5 +62,3 @@ print len(lrs)
 # sort by counts
 print counts.items()
 print indices
-
- #"ATCCATAATCCAT" . 12) ("TCCATAATCCATA" . 12)))
