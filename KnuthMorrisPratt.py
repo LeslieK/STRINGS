@@ -1,25 +1,28 @@
 import numpy as np
+import StringUtils
 
 class DFA(object):
 	def __init__(self, pat):
-		self.R = 256
 		self.pat = pat
 
 		# build dfa from pattern
 		self.M = len(self.pat)
-		self.dfa = np.zeros((self.R, self.M))
+		self.dfa = np.zeros((StringUtils.R, self.M+1))
 		# initialize dfa construction
 		self.dfa[ord(self.pat[0])][0] = 1
 		# X refers to state after matching pat on text[1:] (shifted to the right 1 character)
 		X = 0
 		for j in range(1, self.M):
-			for c in range(self.R):
+			for c in range(StringUtils.R):
 				# on a mismatch: set the state transitions from j to be identical to those from X
 				self.dfa[c][j] = self.dfa[c][X]
 			# on a match: set state transition from j to j + 1
 			self.dfa[ord(self.pat[j])][j] = j + 1
 			# update state X
 			X = self.dfa[ord(self.pat[j])][X]
+		# needed to find next match after a match has been found
+		for c in range(StringUtils.R):
+			self.dfa[c][self.M] = self.dfa[c][X]
 
 	def next(self, text_i, patindex_j):
 		'''return next state given curr_state and pattern index
@@ -65,7 +68,7 @@ class KMP(object):
 			return i - self.M + 1
 		return 'no match', N # length of text
 
-	def findall(self, txt):
+	def findall(self, txt, overlap=True):
 		'''return offset of all occurrences of pattern in text'''
 		results = []
 		N = len(txt)
@@ -83,8 +86,10 @@ class KMP(object):
 					# found match
 					results.append(i - self.M)
 					# reset index into pattern and continue to match
-					j = j - 2  # back up pattern index to one before last character
-					j = self.dfa.next(txt[i], j)
+					if overlap:
+						j = self.dfa.next(txt[i], j)
+					else:
+						j = 0
 			# check for last match
 			if j == self.M:
 				#print 'match', i, i - (self.M - 1)
