@@ -1,11 +1,9 @@
 import StringUtils
 
-R = 10 # number of character values in alphabet
-
 class KeyIndexedSort(object):
-	'''sort a list of small integers'''
+	'''sort keys of small integers'''
 	def __init__(self, alist):
-		self.count = [0] * (R + 1)
+		self.count = [0] * (StringUtils.R + 1)
 		self.aux = [0] * len(alist)
 
 		# store the frequency of each key
@@ -15,7 +13,7 @@ class KeyIndexedSort(object):
 		# store the cumulative total of keys
 		# count[r + 1] contains the number of keys less than r
 		# r is a character in alphabet
-		for r in range(R):
+		for r in range(StringUtils.R):
 			self.count[r + 1] += self.count[r]
 
 		# distribute keys into aux list, in sorted order
@@ -27,31 +25,31 @@ class KeyIndexedSort(object):
 		return self.aux
 
 class LSDSort(object):
-	'''sort a list of fixed-length integers'''
+	'''sort a list of fixed-length strings'''
 
 	def __init__(self, alist, W):
 		'''sort a list of integers of width W'''
 		self.alist = alist
 
 		for d in range(W-1, -1, -1):
-			count = [0] * (R + 1)
+			count = [0] * (StringUtils.R + 1)
 			aux = [0] * len(self.alist)
 
 			# store the frequency of each key
 			# key is dth character of integer n
 			for i in self.alist:
-				count[int(i[d]) + 1] += 1
+				count[ord(i[d]) + 1] += 1
 
 			# store the cumulative total of keys
 			# count[r + 1] contains the number of keys less than r
 			# r is a character in alphabet
-			for r in range(R):
+			for r in range(StringUtils.R):
 				count[r + 1] += count[r]
 
 			# move keys into aux list, in sorted order
 			for i in range(len(self.alist)):
-				aux[count[int(self.alist[i][d])]] = self.alist[i]
-				count[int(self.alist[i][d])] += 1
+				aux[count[ord(self.alist[i][d])]] = self.alist[i]
+				count[ord(self.alist[i][d])] += 1
 			self.alist = aux[::]
 
 	def sort(self):
@@ -70,8 +68,13 @@ class Quick3string(object):
 	def _sort(self, lo, hi, d):
 		'''sort a sequence of strings of unequal length'''
 
-		if (hi <= lo):
-			return
+		if (hi <= lo + StringUtils.CUTOFF):
+			StringUtils.insertion(self.alist, lo, hi, d)
+			return;
+
+		# if (hi <= lo):
+		# 	return
+
 		lt = lo
 		gt = hi
 		i = lo + 1
@@ -80,8 +83,8 @@ class Quick3string(object):
 
 		# make 3 paritions
 		while(i <= gt):
-			curr_string = self.alist[i]
-			t = self._charAt(curr_string, d)
+			curr = self.alist[i]
+			t = self._charAt(curr, d)
 			if t < v:
 				StringUtils.exch(self.alist, lt, i)
 				lt += 1
@@ -111,30 +114,49 @@ class Quick3string(object):
 			return -1
 
 	def sort(self):
-		#pdb.set_trace()
 		self._sort(0, len(self.alist) - 1, 0)
 		return self.alist
 
+
 class Suffix(object):
 	'''a string suffix'''
-	def __init__(self, s, offset):
+	def __init__(self, s, offset, rotated):
 		self.offset = offset
 		self.N = len(s)
 		self.s = s
+		self.rotated = rotated
 
 	def __getitem__(self, i):
-		return self.s[i + self.offset]
+		if not self.rotated:
+			return self.s[i + self.offset]
+		else:
+			return self.s[(i + self.offset) % self.N]
 
-	# def charAt(self, i):
-	# 	return self.s[i + self.offset]
+	def __getslice__(self, i, j):
+		if not self.rotated:
+			return self.s[i + self.offset:j + self.offset]
+		else:
+			return self.s[(i + self.offset) % self.N: (j + self.offset) % self.N]
 
 	def length(self):
-		return self.N - self.offset
+		if not self.rotated:
+			return self.N - self.offset
+		else:
+			return self.N
+
+	def __len__(self):
+		if not self.rotated:
+			return self.N - self.offset
+		else:
+			return self.N
 
 	def __cmp__(self, that):
 		'''compare two suffix objects'''
-		maxoffset = max(self.offset, that.offset)
-		shortest_string = self.N - maxoffset
+		if not self.rotated:
+			maxoffset = max(self.offset, that.offset)
+			shortest_string = self.N - maxoffset
+		else:
+			shortest_string = self.N
 		for i in range(shortest_string):
 			if self[i] < that[i]:
 				return -1
@@ -143,26 +165,32 @@ class Suffix(object):
 		return 0
 
 	def __repr__(self):
-		return self.s, self.offset
+		if not self.rotated:
+			return self.s[self.offset:]
+		else:
+			return self.s[self.offset:] + self.s[:self.offset]
 
 class SuffixArray(object):
 	''' an array of string suffixes'''
-	def __init__(self, text):
+	def __init__(self, text, sort=True, rotated=False):
 		'''build a suffix array of (random) text'''
 		self.text = text
 		self.N = len(text)
-		self.suffixes = [Suffix(text, i) for i in range(self.N)]
+		self.suffixes = [Suffix(text, i, rotated=rotated) for i in range(self.N)]
 
 		# sort suffix array (what sort algorithm is used?)
 		#suffixes.sort
 		# MSD radix sort + 3-way quicksort
 		
-		#self.suffixes = sorted(self.suffixes)
-		self.suffixes.sort()
+		if sort:
+			#self.suffixes.sort()
+			q3 = Quick3string(self.suffixes)
+			self.suffixes = q3.sort()
+
 
 	def __getitem__(self, i):
+		'''returns a suffix object'''
 		return self.suffixes[i]
-
 
 	def length(self):
 		'''length of original text'''

@@ -1,7 +1,5 @@
-R = 4 # number of character values in alphabet
+R = 256 # number of character values in alphabet
 CUTOFF = 0 # length of string when insertion sort is used (instead of some other string sorting method)
-
-from KeyIndexedCounting import SuffixArray
 
 def exch(a_sequence, i, j):
 	'''exchange values a_sequence[i] and a_sequence[j]'''
@@ -56,62 +54,3 @@ def charsfromfile(f):
 			break
 		for x in a:
 			yield x
-
-def LCS(file1, file2):
-	'''returns longest common substring between the files'''
-	with open(file1) as f1:
-		s = f1.read()
-
-	with open(file2) as f2:
-		t = f2.read()
-
-	sentinel = chr(24)
-	st = s + sentinel + t  # chr(24) is ascii CAN (Cancel)
-	sa = SuffixArray(st)
-
-	maxlen = 0
-	indices = set()  # indexes into original string
-	counts = {}
-	for i in xrange(2, len(st)):
-		str1 = sa.select(i-1)
-		str2 = sa.select(i)
-		b1 = sentinel in set(str1)
-		b2 = sentinel in set(str2)
-		if (b1 or b2) and (not (b1 and b2)):
-			if b1:
-				# get index of sentinel in string1
-				j = str1.find(sentinel)
-				length = lcp(str1[:j], str2)
-				index1 = sa.index(i - 1)
-				index2 = sa.index(i) - len(s) - 1
-			else:
-				j = str2.find(sentinel)
-				length = lcp(str1, str2[:j])
-				index1 = sa.index(i - 1) - len(s) - 1
-				index2 = sa.index(i)
-
-			# process length
-			if length > maxlen:
-				# found first lrs
-				maxlen = length
-				indices.clear()
-				counts.clear()
-				lrs = sa.select(i)[:maxlen]
-				counts[lrs] = 2
-				indices.add(index1)
-				indices.add(index2)
-			elif (length == maxlen):
-				# found another lrs with same length as current lrs
-				lrs = sa.select(i)[:maxlen]
-				if lrs in counts:
-					# another repeat of current lrs
-					counts[lrs] = counts[lrs] + 1
-					indices.add(index1)
-					indices.add(index2)
-				else:
-					# add lrs to dict
-					counts[lrs] = 2
-					indices.add(index1)
-					indices.add(index2)
-	print counts
-	print indices
